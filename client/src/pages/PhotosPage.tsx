@@ -170,11 +170,11 @@ const PhotosPage = () => {
   return (
     <div className="photos-container">
       <header className="photos-header">
-        <h1>Your Google Photos</h1>
+        <h1>🌈 Google Photos (Unofficial)</h1>
         <div className="header-info">
-          {photos.length > 0 && (
+          {/* {photos.length > 0 && (
             <span className="photo-count">{photos.length} photos</span>
-          )}
+          )} */}
           <button onClick={handleLogout} className="logout-button">
             Logout
           </button>
@@ -192,19 +192,15 @@ const PhotosPage = () => {
               const isLastElement = index === photos.length - 1;
               const imageUrl = `${photo.baseUrl}=w800-h800-c`;
               const isVideoItem = isVideo(photo);
-              
+
               return (
-                <div 
-                  key={photo.id} 
-                  className={`photo-card ${isVideoItem ? 'video-item' : ''}`}
+                <div
+                  key={photo.id}
+                  className={`photo-card ${isVideoItem ? "video-item" : ""}`}
                   ref={isLastElement ? lastPhotoElementRef : null}
                   onClick={() => openLightbox(index)}
                 >
-                  <img 
-                    src={imageUrl} 
-                    alt={photo.filename} 
-                    loading="lazy"
-                  />
+                  <img src={imageUrl} alt={photo.filename} loading="lazy" />
                   {isVideoItem && (
                     <div className="video-indicator">
                       <svg viewBox="0 0 24 24" fill="white">
@@ -212,21 +208,21 @@ const PhotosPage = () => {
                       </svg>
                     </div>
                   )}
-                  <div className="photo-info">
+                  {/* <div className="photo-info">
                     <p className="photo-name">{photo.filename}</p>
                     {photo.mediaMetadata && (
                       <p className="photo-date">{formatDate(photo.mediaMetadata.creationTime)}</p>
                     )}
-                  </div>
+                  </div> */}
                 </div>
               );
             })}
           </div>
-          
+
           {loadingMore && (
             <div className="loading-more">Loading more photos...</div>
           )}
-          
+
           {!hasMore && photos.length > 0 && (
             <div className="no-more-photos">End of your photo collection</div>
           )}
@@ -266,6 +262,7 @@ const PhotosPage = () => {
               borderRadius: 4,
               padding: 4,
               gap: 10,
+              showToggle: true,
             }}
             captions={{
               showToggle: true,
