@@ -44,10 +44,15 @@ export const authApi = {
 
 // Photos API calls
 export const photosApi = {
-  // Get all photos
-  getPhotos: async () => {
+  // Get photos with pagination support
+  getPhotos: async (pageToken?: string, pageSize: number = 25) => {
     try {
-      const response = await fetch(`${API_URL}/photos`, {
+      let url = `${API_URL}/photos?pageSize=${pageSize}`;
+      if (pageToken) {
+        url += `&pageToken=${pageToken}`;
+      }
+      
+      const response = await fetch(url, {
         credentials: 'include'
       });
       

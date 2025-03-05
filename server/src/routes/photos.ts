@@ -33,7 +33,7 @@ const getAccessToken = async (req: express.Request): Promise<string | null> => {
   return null;
 };
 
-// Get list of photos
+// Get list of photos with pagination support
 router.get('/', isAuthenticated, async (req, res) => {
   try {
     // Get the access token
@@ -43,8 +43,18 @@ router.get('/', isAuthenticated, async (req, res) => {
       return res.status(401).json({ error: 'Not authenticated' });
     }
     
+    // Get pagination parameters from query
+    const pageSize = req.query.pageSize ? parseInt(req.query.pageSize as string) : 25;
+    const pageToken = req.query.pageToken as string | undefined;
+    
+    // Build URL with pagination parameters
+    let url = `https://photoslibrary.googleapis.com/v1/mediaItems?pageSize=${pageSize}`;
+    if (pageToken) {
+      url += `&pageToken=${pageToken}`;
+    }
+    
     // Fetch photos using the mediaItems.list endpoint
-    const response = await fetch('https://photoslibrary.googleapis.com/v1/mediaItems', {
+    const response = await fetch(url, {
       headers: {
         'Authorization': `Bearer ${accessToken}`
       }
