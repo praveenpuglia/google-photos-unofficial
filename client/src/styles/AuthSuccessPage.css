@@ -1,0 +1,27 @@
+.auth-success-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+.auth-success-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+}
+
+.auth-success-card h1 {
+  margin-bottom: 1rem;
+  color: #4CAF50;
+}
+
+.auth-success-card p {
+  margin-bottom: 0.5rem;
+  color: #666;
+} 
