@@ -127,7 +127,7 @@ const PhotosPage = () => {
   };
 
   const slides: LightboxSlide[] = photos.map(photo => ({
-    src: `${photo.baseUrl}=w1920-h1080`,
+    src: `${photo.baseUrl}=d`,
     alt: photo.filename,
     width: photo.mediaMetadata?.width ? parseInt(photo.mediaMetadata.width) : undefined,
     height: photo.mediaMetadata?.height ? parseInt(photo.mediaMetadata.height) : undefined,
@@ -247,6 +247,12 @@ const PhotosPage = () => {
             render={{
               buttonPrev: photos.length <= 1 ? () => null : undefined,
               buttonNext: photos.length <= 1 ? () => null : undefined,
+              iconLoading: () => (
+                <div className="lightbox-loading">
+                  <div className="spinner"></div>
+                  <div>Loading full resolution image...</div>
+                </div>
+              ),
             }}
           />
         </>
