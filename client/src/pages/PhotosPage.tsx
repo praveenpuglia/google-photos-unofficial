@@ -5,6 +5,8 @@ import Zoom from 'yet-another-react-lightbox/plugins/zoom';
 import Fullscreen from 'yet-another-react-lightbox/plugins/fullscreen';
 import Thumbnails from 'yet-another-react-lightbox/plugins/thumbnails';
 import Captions from 'yet-another-react-lightbox/plugins/captions';
+import Video from 'yet-another-react-lightbox/plugins/video';
+import type { Slide } from 'yet-another-react-lightbox';
 import 'yet-another-react-lightbox/styles.css';
 import 'yet-another-react-lightbox/plugins/thumbnails.css';
 import 'yet-another-react-lightbox/plugins/captions.css';
@@ -25,15 +27,6 @@ interface Photo {
 interface PhotosResponse {
   mediaItems: Photo[];
   nextPageToken?: string;
-}
-
-interface LightboxSlide {
-  src: string;
-  alt?: string;
-  width?: number;
-  height?: number;
-  title?: string;
-  description?: string;
 }
 
 const PhotosPage = () => {
@@ -126,16 +119,45 @@ const PhotosPage = () => {
     setLightboxOpen(true);
   };
 
-  const slides: LightboxSlide[] = photos.map(photo => ({
-    src: `${photo.baseUrl}=d`,
-    alt: photo.filename,
-    width: photo.mediaMetadata?.width ? parseInt(photo.mediaMetadata.width) : undefined,
-    height: photo.mediaMetadata?.height ? parseInt(photo.mediaMetadata.height) : undefined,
-    title: photo.filename,
-    description: photo.mediaMetadata?.creationTime 
-      ? `Taken on ${formatDate(photo.mediaMetadata.creationTime)}`
-      : undefined,
-  }));
+  const isVideo = (photo: Photo): boolean => {
+    return photo.mimeType.startsWith('video/') || photo.mimeType.includes('mp4');
+  };
+
+  const slides: Slide[] = photos.map(photo => {
+    if (isVideo(photo)) {
+      // Handle video
+      return {
+        type: 'video',
+        width: photo.mediaMetadata?.width ? parseInt(photo.mediaMetadata.width) : undefined,
+        height: photo.mediaMetadata?.height ? parseInt(photo.mediaMetadata.height) : undefined,
+        poster: `${photo.baseUrl}=w1920-h1080`,
+        title: photo.filename,
+        description: photo.mediaMetadata?.creationTime 
+          ? `Taken on ${formatDate(photo.mediaMetadata.creationTime)}`
+          : undefined,
+        sources: [
+          {
+            src: `${photo.baseUrl}=dv`,
+            type: photo.mimeType
+          }
+        ],
+        alt: photo.filename,
+      };
+    } else {
+      // Handle image
+      return {
+        type: 'image',
+        src: `${photo.baseUrl}=d`,
+        alt: photo.filename,
+        width: photo.mediaMetadata?.width ? parseInt(photo.mediaMetadata.width) : undefined,
+        height: photo.mediaMetadata?.height ? parseInt(photo.mediaMetadata.height) : undefined,
+        title: photo.filename,
+        description: photo.mediaMetadata?.creationTime 
+          ? `Taken on ${formatDate(photo.mediaMetadata.creationTime)}`
+          : undefined,
+      };
+    }
+  });
 
   if (loading && photos.length === 0) {
     return <div className="loading-container">Loading your photos...</div>;
@@ -169,11 +191,12 @@ const PhotosPage = () => {
             {photos.map((photo, index) => {
               const isLastElement = index === photos.length - 1;
               const imageUrl = `${photo.baseUrl}=w800-h800-c`;
+              const isVideoItem = isVideo(photo);
               
               return (
                 <div 
                   key={photo.id} 
-                  className="photo-card"
+                  className={`photo-card ${isVideoItem ? 'video-item' : ''}`}
                   ref={isLastElement ? lastPhotoElementRef : null}
                   onClick={() => openLightbox(index)}
                 >
@@ -182,6 +205,13 @@ const PhotosPage = () => {
                     alt={photo.filename} 
                     loading="lazy"
                   />
+                  {isVideoItem && (
+                    <div className="video-indicator">
+                      <svg viewBox="0 0 24 24" fill="white">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </div>
+                  )}
                   <div className="photo-info">
                     <p className="photo-name">{photo.filename}</p>
                     {photo.mediaMetadata && (
@@ -206,7 +236,13 @@ const PhotosPage = () => {
             close={() => setLightboxOpen(false)}
             slides={slides}
             index={lightboxIndex}
-            plugins={[Zoom, Fullscreen, Thumbnails, Captions]}
+            plugins={[Video, Zoom, Fullscreen, Thumbnails, Captions]}
+            video={{
+              autoPlay: true,
+              controls: true,
+              playsInline: true,
+              loop: false,
+            }}
             zoom={{
               maxZoomPixelRatio: 5,
               zoomInMultiplier: 2,
