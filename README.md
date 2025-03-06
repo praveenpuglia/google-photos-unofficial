@@ -1,4 +1,4 @@
-# Google Photos Unofficial Viewer
+# Photos Unofficial Viewer
 
 A simple web application that allows users to view their Google Photos library. This project consists of a React frontend and an Express backend that handles Google OAuth authentication.
 

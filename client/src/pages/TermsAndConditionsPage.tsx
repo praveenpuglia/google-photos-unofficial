@@ -14,7 +14,7 @@ const TermsAndConditionsPage = () => {
         <section className="mb-6">
           <h2 className="text-xl font-semibold mb-3">1. Acceptance of Terms</h2>
           <p className="mb-2">
-            By accessing or using the Google Photos Unofficial Viewer application ("the Application"), you agree to be bound by these Terms and Conditions and our Privacy Policy.
+            By accessing or using the Photos Unofficial Viewer application ("the Application"), you agree to be bound by these Terms and Conditions and our Privacy Policy.
             If you do not agree to these terms, please do not use the Application.
           </p>
         </section>

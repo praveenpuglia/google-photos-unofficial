@@ -170,7 +170,7 @@ const PhotosPage = () => {
   return (
     <div className="photos-container">
       <header className="photos-header">
-        <h1>🌈 Google Photos (Unofficial)</h1>
+        <h1>🌈 Photos (Unofficial)</h1>
         <div className="header-info">
           {/* {photos.length > 0 && (
             <span className="photo-count">{photos.length} photos</span>

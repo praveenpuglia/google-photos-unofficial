@@ -14,7 +14,7 @@ const PrivacyPolicyPage = () => {
         <section className="mb-6">
           <h2 className="text-xl font-semibold mb-3">1. Introduction</h2>
           <p className="mb-2">
-            Welcome to Google Photos Unofficial Viewer. We respect your privacy and are committed to protecting your personal data.
+            Welcome to Photos Unofficial Viewer. We respect your privacy and are committed to protecting your personal data.
             This Privacy Policy explains how we collect, use, and safeguard your information when you use our application.
           </p>
           <p>
