@@ -1,18 +1,18 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { photosApi, authApi } from '../services/api';
-import { FixedSizeGrid as Grid } from 'react-window';
-import AutoSizer from 'react-virtualized-auto-sizer';
-import Lightbox from 'yet-another-react-lightbox';
-import Zoom from 'yet-another-react-lightbox/plugins/zoom';
-import Fullscreen from 'yet-another-react-lightbox/plugins/fullscreen';
-import Thumbnails from 'yet-another-react-lightbox/plugins/thumbnails';
-import Captions from 'yet-another-react-lightbox/plugins/captions';
-import Video from 'yet-another-react-lightbox/plugins/video';
-import type { Slide } from 'yet-another-react-lightbox';
-import 'yet-another-react-lightbox/styles.css';
-import 'yet-another-react-lightbox/plugins/thumbnails.css';
-import 'yet-another-react-lightbox/plugins/captions.css';
-import '../styles/PhotosPage.css';
+import { useState, useEffect, useRef, useCallback } from "react";
+import { photosApi, authApi } from "../services/api";
+import { FixedSizeGrid as Grid } from "react-window";
+import AutoSizer from "react-virtualized-auto-sizer";
+import Lightbox from "yet-another-react-lightbox";
+import Zoom from "yet-another-react-lightbox/plugins/zoom";
+import Fullscreen from "yet-another-react-lightbox/plugins/fullscreen";
+import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
+import Captions from "yet-another-react-lightbox/plugins/captions";
+import Video from "yet-another-react-lightbox/plugins/video";
+import type { Slide } from "yet-another-react-lightbox";
+import "yet-another-react-lightbox/styles.css";
+import "yet-another-react-lightbox/plugins/thumbnails.css";
+import "yet-another-react-lightbox/plugins/captions.css";
+import "../styles/PhotosPage.css";
 
 interface Photo {
   id: string;
@@ -42,18 +42,19 @@ const PhotosPage = () => {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [nextPageToken, setNextPageToken] = useState<string | undefined>(undefined);
+  const [nextPageToken, setNextPageToken] = useState<string | undefined>(
+    undefined
+  );
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [loadingMore, setLoadingMore] = useState<boolean>(false);
   const [lightboxOpen, setLightboxOpen] = useState<boolean>(false);
   const [lightboxIndex, setLightboxIndex] = useState<number>(0);
-  
+
   // Grid configuration
   const [columnCount, setColumnCount] = useState(5);
-  const CELL_WIDTH = 200;
   const CELL_HEIGHT = 200;
   const GRID_GAP = 8;
-  
+
   // Update column count based on window width
   useEffect(() => {
     const handleResize = () => {
@@ -65,38 +66,18 @@ const PhotosPage = () => {
       else if (width > 480) setColumnCount(3);
       else setColumnCount(2);
     };
-    
+
     handleResize(); // Initial call
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
-  
+
   // Calculate row count based on photos length and column count
   const rowCount = Math.ceil(photos.length / columnCount);
-  
+
   // Infinite loading
   const gridRef = useRef<Grid>(null);
   const loadMoreItemsRef = useRef<boolean>(false);
-  
-  const isItemLoaded = (index: number) => {
-    return index < photos.length;
-  };
-  
-  const loadMoreItems = useCallback(() => {
-    if (!loadingMore && hasMore && !loadMoreItemsRef.current) {
-      loadMoreItemsRef.current = true;
-      loadMorePhotos().finally(() => {
-        loadMoreItemsRef.current = false;
-      });
-    }
-  }, [loadingMore, hasMore]);
-  
-  const onItemsRendered = useCallback(({ visibleRowStartIndex, visibleRowStopIndex }: any) => {
-    // If we're close to the end of the list, load more items
-    if (visibleRowStopIndex >= rowCount - 2) {
-      loadMoreItems();
-    }
-  }, [rowCount, loadMoreItems]);
 
   const fetchPhotos = async (pageToken?: string) => {
     try {
@@ -116,7 +97,7 @@ const PhotosPage = () => {
     }
   };
 
-  const loadMorePhotos = async () => {
+  const loadMorePhotos = useCallback(async () => {
     if (!nextPageToken || loadingMore) return;
     
     try {
@@ -133,7 +114,23 @@ const PhotosPage = () => {
     } finally {
       setLoadingMore(false);
     }
-  };
+  }, [nextPageToken, loadingMore, setPhotos, setNextPageToken, setHasMore, setLoadingMore]);
+  
+  const loadMoreItems = useCallback(() => {
+    if (!loadingMore && hasMore && !loadMoreItemsRef.current) {
+      loadMoreItemsRef.current = true;
+      loadMorePhotos().finally(() => {
+        loadMoreItemsRef.current = false;
+      });
+    }
+  }, [loadingMore, hasMore, loadMorePhotos]);
+  
+  const onItemsRendered = useCallback(({ visibleRowStopIndex }: { visibleRowStopIndex: number }) => {
+    // If we're close to the end of the list, load more items
+    if (visibleRowStopIndex >= rowCount - 2) {
+      loadMoreItems();
+    }
+  }, [rowCount, loadMoreItems]);
 
   useEffect(() => {
     fetchPhotos();
@@ -142,19 +139,19 @@ const PhotosPage = () => {
   const handleLogout = async () => {
     try {
       await authApi.logout();
-      window.location.href = '/';
+      window.location.href = "/";
     } catch (err) {
-      console.error('Logout failed:', err);
+      console.error("Logout failed:", err);
     }
   };
 
   const formatDate = (dateString?: string) => {
-    if (!dateString) return '';
+    if (!dateString) return "";
     const date = new Date(dateString);
-    return date.toLocaleDateString(undefined, { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
+    return date.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
@@ -164,7 +161,9 @@ const PhotosPage = () => {
   };
 
   const isVideo = (photo: Photo): boolean => {
-    return photo.mimeType.startsWith('video/') || photo.mimeType.includes('mp4');
+    return (
+      photo.mimeType.startsWith("video/") || photo.mimeType.includes("mp4")
+    );
   };
 
   // Cell renderer for the grid
@@ -179,11 +178,6 @@ const PhotosPage = () => {
     const photo = photos[index];
     const imageUrl = `${photo.baseUrl}=w400-h400`;
     const isVideoItem = isVideo(photo);
-    
-    // Calculate aspect ratio from metadata if available
-    const aspectRatio = photo.mediaMetadata?.width && photo.mediaMetadata?.height
-      ? `${photo.mediaMetadata.width} / ${photo.mediaMetadata.height}`
-      : '1 / 1';
     
     // Adjust style to account for grid gap
     const cellStyle = {
@@ -224,36 +218,44 @@ const PhotosPage = () => {
     );
   };
 
-  const slides: Slide[] = photos.map(photo => {
+  const slides: Slide[] = photos.map((photo) => {
     if (isVideo(photo)) {
       // Handle video
       return {
-        type: 'video',
-        width: photo.mediaMetadata?.width ? parseInt(photo.mediaMetadata.width) : undefined,
-        height: photo.mediaMetadata?.height ? parseInt(photo.mediaMetadata.height) : undefined,
+        type: "video",
+        width: photo.mediaMetadata?.width
+          ? parseInt(photo.mediaMetadata.width)
+          : undefined,
+        height: photo.mediaMetadata?.height
+          ? parseInt(photo.mediaMetadata.height)
+          : undefined,
         poster: `${photo.baseUrl}=w1920-h1080`,
         title: photo.filename,
-        description: photo.mediaMetadata?.creationTime 
+        description: photo.mediaMetadata?.creationTime
           ? `Taken on ${formatDate(photo.mediaMetadata.creationTime)}`
           : undefined,
         sources: [
           {
             src: `${photo.baseUrl}=dv`,
-            type: photo.mimeType
-          }
+            type: photo.mimeType,
+          },
         ],
         alt: photo.filename,
       };
     } else {
       // Handle image
       return {
-        type: 'image',
+        type: "image",
         src: `${photo.baseUrl}=d`,
         alt: photo.filename,
-        width: photo.mediaMetadata?.width ? parseInt(photo.mediaMetadata.width) : undefined,
-        height: photo.mediaMetadata?.height ? parseInt(photo.mediaMetadata.height) : undefined,
+        width: photo.mediaMetadata?.width
+          ? parseInt(photo.mediaMetadata.width)
+          : undefined,
+        height: photo.mediaMetadata?.height
+          ? parseInt(photo.mediaMetadata.height)
+          : undefined,
         title: photo.filename,
-        description: photo.mediaMetadata?.creationTime 
+        description: photo.mediaMetadata?.creationTime
           ? `Taken on ${formatDate(photo.mediaMetadata.creationTime)}`
           : undefined,
       };
@@ -385,4 +387,4 @@ const PhotosPage = () => {
   );
 };
 
-export default PhotosPage; 
+export default PhotosPage;
