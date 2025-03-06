@@ -263,11 +263,13 @@ const PhotosPage = () => {
               padding: 4,
               gap: 10,
               showToggle: true,
+              hidden: true,
             }}
             captions={{
               showToggle: true,
               descriptionTextAlign: "center",
               descriptionMaxLines: 3,
+              hidden: true,
             }}
             animation={{
               swipe: 250,
