@@ -111,29 +111,133 @@ router.post('/search', async (req, res) => {
       return res.status(401).json({ error: 'Not authenticated' });
     }
     
-    // For Google Photos, we need to use the list endpoint with filters
-    // since the search endpoint doesn't support text search directly
-    let url = 'https://photoslibrary.googleapis.com/v1/mediaItems';
-    let params = new URLSearchParams();
+    // For natural language search, we need to use the mediaItems:search endpoint
+    const url = 'https://photoslibrary.googleapis.com/v1/mediaItems:search';
     
-    if (pageSize) {
-      params.append('pageSize', pageSize.toString());
+    // Map common search terms to content categories
+    // See: https://developers.google.com/photos/library/reference/rest/v1/mediaItems/search#ContentCategory
+    const contentCategories = [];
+    const lowerQuery = query.toLowerCase();
+    
+    // Map natural language queries to Google's content categories
+    if (
+      lowerQuery.includes('landscape') || 
+      lowerQuery.includes('scenery') || 
+      lowerQuery.includes('outdoor') ||
+      lowerQuery.includes('nature')
+    ) {
+      contentCategories.push('LANDSCAPES');
     }
     
-    if (pageToken) {
-      params.append('pageToken', pageToken);
+    if (
+      lowerQuery.includes('selfie') || 
+      lowerQuery.includes('portrait') || 
+      lowerQuery.includes('face') ||
+      lowerQuery.includes('people') ||
+      lowerQuery.includes('person')
+    ) {
+      contentCategories.push('SELFIES');
+      contentCategories.push('PEOPLE');
     }
     
-    // Add the parameters to the URL
-    url = `${url}?${params.toString()}`;
+    if (
+      lowerQuery.includes('city') || 
+      lowerQuery.includes('building') || 
+      lowerQuery.includes('architecture') ||
+      lowerQuery.includes('skyline')
+    ) {
+      contentCategories.push('CITYSCAPES');
+    }
     
-    console.log('Fetching from URL:', url);
+    if (
+      lowerQuery.includes('food') || 
+      lowerQuery.includes('meal') || 
+      lowerQuery.includes('dish') ||
+      lowerQuery.includes('restaurant')
+    ) {
+      contentCategories.push('FOOD');
+    }
+    
+    if (
+      lowerQuery.includes('dog') || 
+      lowerQuery.includes('cat') || 
+      lowerQuery.includes('pet') ||
+      lowerQuery.includes('animal')
+    ) {
+      contentCategories.push('PETS');
+    }
+    
+    if (
+      lowerQuery.includes('document') || 
+      lowerQuery.includes('receipt') || 
+      lowerQuery.includes('text') ||
+      lowerQuery.includes('paper')
+    ) {
+      contentCategories.push('DOCUMENTS');
+    }
+    
+    if (
+      lowerQuery.includes('birthday') || 
+      lowerQuery.includes('party') || 
+      lowerQuery.includes('celebration') ||
+      lowerQuery.includes('event')
+    ) {
+      contentCategories.push('BIRTHDAYS');
+      contentCategories.push('WEDDINGS');
+    }
+    
+    if (
+      lowerQuery.includes('travel') || 
+      lowerQuery.includes('vacation') || 
+      lowerQuery.includes('trip')
+    ) {
+      contentCategories.push('TRAVEL');
+    }
+    
+    if (
+      lowerQuery.includes('flower') || 
+      lowerQuery.includes('plant') || 
+      lowerQuery.includes('garden')
+    ) {
+      contentCategories.push('FLOWERS');
+    }
+    
+    // Prepare the request body
+    const requestBody: any = {
+      pageSize: Number(pageSize),
+      pageToken: pageToken || undefined
+    };
+    
+    // Add filters if we have content categories or a query
+    if (contentCategories.length > 0) {
+      requestBody.filters = {
+        contentFilter: {
+          includedContentCategories: contentCategories
+        }
+      };
+      
+      // Check if the query specifically mentions videos
+      if (lowerQuery.includes('video')) {
+        requestBody.filters.mediaTypeFilter = {
+          mediaTypes: ['VIDEO']
+        };
+      } else {
+        // Default to photos only to avoid the "Only one media type" error
+        requestBody.filters.mediaTypeFilter = {
+          mediaTypes: ['PHOTO']
+        };
+      }
+    }
+    
+    console.log('Search request body:', JSON.stringify(requestBody, null, 2));
     
     const response = await fetch(url, {
+      method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json'
-      }
+      },
+      body: JSON.stringify(requestBody)
     });
     
     if (!response.ok) {
@@ -144,20 +248,51 @@ router.post('/search', async (req, res) => {
     
     const data = await response.json();
     
-    // If there's a search query, filter the results on the server side
-    if (query && query.trim() !== '' && data.mediaItems) {
-      // Simple case-insensitive search in filename
-      const filteredItems = data.mediaItems.filter((item: any) => 
-        item.filename.toLowerCase().includes(query.toLowerCase())
-      );
+    // If we didn't use content categories or didn't get results, fall back to filename search
+    if ((contentCategories.length === 0 || !data.mediaItems || data.mediaItems.length === 0) && query && query.trim() !== '') {
+      console.log('No results from content categories, falling back to filename search');
       
-      return res.json({
-        mediaItems: filteredItems,
-        nextPageToken: data.nextPageToken
+      // Fetch all photos and filter by filename
+      const listUrl = 'https://photoslibrary.googleapis.com/v1/mediaItems';
+      const listParams = new URLSearchParams();
+      
+      if (pageSize) {
+        listParams.append('pageSize', pageSize.toString());
+      }
+      
+      if (pageToken) {
+        listParams.append('pageToken', pageToken);
+      }
+      
+      const listResponse = await fetch(`${listUrl}?${listParams.toString()}`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
       });
+      
+      if (!listResponse.ok) {
+        const errorData = await listResponse.json();
+        console.error('Google Photos API error:', errorData);
+        return res.status(listResponse.status).json({ error: 'Failed to search photos' });
+      }
+      
+      const listData = await listResponse.json();
+      
+      if (listData.mediaItems) {
+        // Simple case-insensitive search in filename
+        const filteredItems = listData.mediaItems.filter((item: any) => 
+          item.filename.toLowerCase().includes(query.toLowerCase())
+        );
+        
+        return res.json({
+          mediaItems: filteredItems,
+          nextPageToken: listData.nextPageToken
+        });
+      }
     }
     
-    // If no query or no results, return the original data
+    // Return the original search results
     res.json(data);
   } catch (error) {
     console.error('Error searching photos:', error);
