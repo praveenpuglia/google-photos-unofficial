@@ -2,6 +2,9 @@
   "name": "server",
   "version": "1.0.0",
   "main": "dist/index.js",
+  "engines": {
+    "node": "20.18.3"
+  },
   "scripts": {
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
@@ -34,6 +37,6 @@
     "@types/express-session": "^1.18.1"
   },
   "volta": {
-    "node": "23.9.0"
+    "node": "20.18.3"
   }
 }
