@@ -1,3 +1,4 @@
+
 .photos-container {
   padding: 0;
   width: 100%;
@@ -280,7 +281,6 @@
 .virtualized-grid-container {
   height: calc(100vh - 70px); /* Adjust based on your header height */
   width: 100%;
-  padding: 8px;
   box-sizing: border-box;
 }
 
