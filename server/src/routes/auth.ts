@@ -102,8 +102,20 @@ router.get('/google/callback', async (req, res) => {
       };
     }
     
-    // Redirect to client with success
-    res.redirect(`${process.env.CLIENT_URL}/auth-success`);
+    // Explicitly save the session before redirecting
+    req.session.save((err) => {
+      if (err) {
+        console.error('Error saving session:', err);
+        return res.status(500).json({ error: 'Failed to save session' });
+      }
+      
+      console.log('Session saved successfully before redirect');
+      console.log('Session ID:', req.sessionID);
+      console.log('Session data:', req.session);
+      
+      // Redirect to client with success
+      res.redirect(`${process.env.CLIENT_URL}/auth-success`);
+    });
   } catch (error) {
     console.error('Error exchanging code for tokens:', error);
     res.status(500).json({ error: 'Failed to authenticate with Google' });
@@ -112,9 +124,19 @@ router.get('/google/callback', async (req, res) => {
 
 // Check if user is authenticated
 router.get('/status', (req, res) => {
+  console.log('Status check - Session ID:', req.sessionID);
+  console.log('Status check - Session data:', req.session);
+  console.log('Status check - Cookies:', req.cookies);
+  
   const isAuthenticated = !!req.session.userId || !!req.session.tokens;
   
-  res.json({ isAuthenticated });
+  res.json({ 
+    isAuthenticated,
+    sessionId: req.sessionID,
+    hasUserId: !!req.session.userId,
+    hasTokens: !!req.session.tokens,
+    cookiesPresent: Object.keys(req.cookies || {})
+  });
 });
 
 // Get current user info
