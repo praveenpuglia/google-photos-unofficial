@@ -10,7 +10,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "description": "Google Photos API server",
   "dependencies": {
     "@types/express": "^4.17.21",

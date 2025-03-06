@@ -1,4 +1,5 @@
-const API_URL = 'http://localhost:3001';
+// Use the environment variable with a fallback for development
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 // Authentication API calls
 export const authApi = {

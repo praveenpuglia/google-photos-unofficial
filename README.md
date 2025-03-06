@@ -76,10 +76,63 @@ The project is divided into two main parts:
    npm install
    ```
 
-3. Start the development server:
+3. Create a `.env` file based on `.env.example`:
+   ```
+   VITE_API_URL=http://localhost:3001
+   ```
+
+4. Start the development server:
    ```
    npm run dev
    ```
+
+## Deployment
+
+### Environment Variables
+
+#### Client Environment Variables
+
+For production deployment, create a `.env.production` file in the client directory with:
+
+```
+VITE_API_URL=https://your-production-api-url.com
+```
+
+Replace `https://your-production-api-url.com` with your actual production API URL.
+
+#### Server Environment Variables
+
+For production deployment, make sure to set these environment variables:
+
+```
+PORT=3001 (or your preferred port)
+CLIENT_URL=https://your-production-client-url.com
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_REDIRECT_URI=https://your-production-api-url.com/auth/google/callback
+MONGODB_URI=your_mongodb_atlas_connection_string
+SESSION_SECRET=your_secure_session_secret
+```
+
+### Building for Production
+
+#### Client
+
+```
+cd client
+npm run build
+```
+
+This will create a `dist` directory with optimized production files.
+
+#### Server
+
+```
+cd server
+npm run build
+```
+
+This will compile TypeScript to JavaScript in the `dist` directory.
 
 ## Usage
 
@@ -90,4 +143,4 @@ The project is divided into two main parts:
 
 ## License
 
-This project is licensed under the ISC License. 
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
