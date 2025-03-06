@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { authApi } from '../services/api';
 import '../styles/LoginPage.css';
 
@@ -42,6 +43,15 @@ const LoginPage = () => {
             Login with Google
           </a>
         )}
+        
+        <div className="legal-links">
+          <p>
+            By logging in, you agree to our{' '}
+            <Link to="/tnc" className="legal-link">Terms and Conditions</Link>
+            {' '}and{' '}
+            <Link to="/privacy" className="legal-link">Privacy Policy</Link>
+          </p>
+        </div>
       </div>
     </div>
   );

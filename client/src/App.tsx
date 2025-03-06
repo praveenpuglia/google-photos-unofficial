@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import LoginPage from './pages/LoginPage'
 import PhotosPage from './pages/PhotosPage'
 import AuthSuccessPage from './pages/AuthSuccessPage'
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
+import TermsAndConditionsPage from './pages/TermsAndConditionsPage'
 import { authApi } from './services/api'
 import './App.css'
 
@@ -40,6 +42,8 @@ function App() {
         <Route path="/photos" element={
           isAuthenticated ? <PhotosPage /> : <Navigate to="/" />
         } />
+        <Route path="/privacy" element={<PrivacyPolicyPage />} />
+        <Route path="/tnc" element={<TermsAndConditionsPage />} />
       </Routes>
     </Router>
   );

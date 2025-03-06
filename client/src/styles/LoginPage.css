@@ -49,4 +49,21 @@
 .error {
   color: #d32f2f;
   margin: 1rem 0;
+}
+
+.legal-links {
+  margin-top: 2rem;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.legal-link {
+  color: #4285F4;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.legal-link:hover {
+  color: #3367D6;
+  text-decoration: underline;
 } 
