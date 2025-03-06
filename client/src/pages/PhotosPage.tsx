@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { photosApi, authApi } from '../services/api';
+import { FixedSizeGrid as Grid } from 'react-window';
+import AutoSizer from 'react-virtualized-auto-sizer';
 import Lightbox from 'yet-another-react-lightbox';
 import Zoom from 'yet-another-react-lightbox/plugins/zoom';
 import Fullscreen from 'yet-another-react-lightbox/plugins/fullscreen';
@@ -29,6 +31,13 @@ interface PhotosResponse {
   nextPageToken?: string;
 }
 
+// Cell renderer for the grid
+interface CellProps {
+  columnIndex: number;
+  rowIndex: number;
+  style: React.CSSProperties;
+}
+
 const PhotosPage = () => {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -39,20 +48,55 @@ const PhotosPage = () => {
   const [lightboxOpen, setLightboxOpen] = useState<boolean>(false);
   const [lightboxIndex, setLightboxIndex] = useState<number>(0);
   
-  const observer = useRef<IntersectionObserver | null>(null);
-  const lastPhotoElementRef = useCallback((node: HTMLDivElement | null) => {
-    if (loading || loadingMore) return;
+  // Grid configuration
+  const [columnCount, setColumnCount] = useState(5);
+  const CELL_WIDTH = 200;
+  const CELL_HEIGHT = 200;
+  const GRID_GAP = 8;
+  
+  // Update column count based on window width
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      if (width > 1600) setColumnCount(8);
+      else if (width > 1200) setColumnCount(6);
+      else if (width > 900) setColumnCount(5);
+      else if (width > 600) setColumnCount(4);
+      else if (width > 480) setColumnCount(3);
+      else setColumnCount(2);
+    };
     
-    if (observer.current) observer.current.disconnect();
-    
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
-        loadMorePhotos();
-      }
-    }, { threshold: 0.5 });
-    
-    if (node) observer.current.observe(node);
-  }, [loading, loadingMore, hasMore]);
+    handleResize(); // Initial call
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
+  // Calculate row count based on photos length and column count
+  const rowCount = Math.ceil(photos.length / columnCount);
+  
+  // Infinite loading
+  const gridRef = useRef<Grid>(null);
+  const loadMoreItemsRef = useRef<boolean>(false);
+  
+  const isItemLoaded = (index: number) => {
+    return index < photos.length;
+  };
+  
+  const loadMoreItems = useCallback(() => {
+    if (!loadingMore && hasMore && !loadMoreItemsRef.current) {
+      loadMoreItemsRef.current = true;
+      loadMorePhotos().finally(() => {
+        loadMoreItemsRef.current = false;
+      });
+    }
+  }, [loadingMore, hasMore]);
+  
+  const onItemsRendered = useCallback(({ visibleRowStartIndex, visibleRowStopIndex }: any) => {
+    // If we're close to the end of the list, load more items
+    if (visibleRowStopIndex >= rowCount - 2) {
+      loadMoreItems();
+    }
+  }, [rowCount, loadMoreItems]);
 
   const fetchPhotos = async (pageToken?: string) => {
     try {
@@ -123,6 +167,63 @@ const PhotosPage = () => {
     return photo.mimeType.startsWith('video/') || photo.mimeType.includes('mp4');
   };
 
+  // Cell renderer for the grid
+  const Cell = ({ columnIndex, rowIndex, style }: CellProps) => {
+    const index = rowIndex * columnCount + columnIndex;
+    
+    // Return empty cell if index is out of bounds
+    if (index >= photos.length) {
+      return <div style={style} />;
+    }
+    
+    const photo = photos[index];
+    const imageUrl = `${photo.baseUrl}=w400-h400`;
+    const isVideoItem = isVideo(photo);
+    
+    // Calculate aspect ratio from metadata if available
+    const aspectRatio = photo.mediaMetadata?.width && photo.mediaMetadata?.height
+      ? `${photo.mediaMetadata.width} / ${photo.mediaMetadata.height}`
+      : '1 / 1';
+    
+    // Adjust style to account for grid gap
+    const cellStyle = {
+      ...style,
+      left: Number(style.left) + GRID_GAP,
+      top: Number(style.top) + GRID_GAP,
+      width: Number(style.width) - GRID_GAP,
+      height: Number(style.height) - GRID_GAP,
+    };
+    
+    return (
+      <div
+        style={cellStyle}
+        className={`photo-card ${isVideoItem ? "video-item" : ""}`}
+        onClick={() => openLightbox(index)}
+      >
+        <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+          <img 
+            src={imageUrl} 
+            alt={photo.filename} 
+            loading="lazy"
+            style={{ 
+              width: '100%', 
+              height: '100%', 
+              objectFit: 'contain',
+              backgroundColor: '#f5f5f5'
+            }}
+          />
+          {isVideoItem && (
+            <div className="video-indicator">
+              <svg viewBox="0 0 24 24" fill="white">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   const slides: Slide[] = photos.map(photo => {
     if (isVideo(photo)) {
       // Handle video
@@ -187,36 +288,24 @@ const PhotosPage = () => {
         </div>
       ) : (
         <>
-          <div className="photos-grid">
-            {photos.map((photo, index) => {
-              const isLastElement = index === photos.length - 1;
-              const imageUrl = `${photo.baseUrl}=w800-h800-c`;
-              const isVideoItem = isVideo(photo);
-
-              return (
-                <div
-                  key={photo.id}
-                  className={`photo-card ${isVideoItem ? "video-item" : ""}`}
-                  ref={isLastElement ? lastPhotoElementRef : null}
-                  onClick={() => openLightbox(index)}
+          <div className="virtualized-grid-container">
+            <AutoSizer>
+              {({ height, width }: { height: number; width: number }) => (
+                <Grid
+                  ref={gridRef}
+                  columnCount={columnCount}
+                  columnWidth={width / columnCount}
+                  height={height}
+                  rowCount={rowCount}
+                  rowHeight={CELL_HEIGHT}
+                  width={width}
+                  onItemsRendered={onItemsRendered}
+                  itemData={photos}
                 >
-                  <img src={imageUrl} alt={photo.filename} loading="lazy" />
-                  {isVideoItem && (
-                    <div className="video-indicator">
-                      <svg viewBox="0 0 24 24" fill="white">
-                        <path d="M8 5v14l11-7z" />
-                      </svg>
-                    </div>
-                  )}
-                  {/* <div className="photo-info">
-                    <p className="photo-name">{photo.filename}</p>
-                    {photo.mediaMetadata && (
-                      <p className="photo-date">{formatDate(photo.mediaMetadata.creationTime)}</p>
-                    )}
-                  </div> */}
-                </div>
-              );
-            })}
+                  {Cell}
+                </Grid>
+              )}
+            </AutoSizer>
           </div>
 
           {loadingMore && (
