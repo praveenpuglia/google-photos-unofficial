@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import LoginPage from './pages/LoginPage'
 import PhotosPage from './pages/PhotosPage'
+import ExplorePage from './pages/ExplorePage'
 import AuthSuccessPage from './pages/AuthSuccessPage'
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
 import TermsAndConditionsPage from './pages/TermsAndConditionsPage'
@@ -41,6 +42,9 @@ function App() {
         <Route path="/auth-success" element={<AuthSuccessPage />} />
         <Route path="/photos" element={
           isAuthenticated ? <PhotosPage /> : <Navigate to="/" />
+        } />
+        <Route path="/explore" element={
+          isAuthenticated ? <ExplorePage /> : <Navigate to="/" />
         } />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/tnc" element={<TermsAndConditionsPage />} />

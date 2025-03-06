@@ -100,4 +100,69 @@ router.get('/:id', isAuthenticated, async (req, res) => {
   }
 });
 
+// Search photos
+router.post('/search', async (req, res) => {
+  try {
+    const { query, pageSize = 25, pageToken } = req.body;
+    
+    // Get access token
+    const accessToken = await getAccessToken(req);
+    if (!accessToken) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+    
+    // For Google Photos, we need to use the list endpoint with filters
+    // since the search endpoint doesn't support text search directly
+    let url = 'https://photoslibrary.googleapis.com/v1/mediaItems';
+    let params = new URLSearchParams();
+    
+    if (pageSize) {
+      params.append('pageSize', pageSize.toString());
+    }
+    
+    if (pageToken) {
+      params.append('pageToken', pageToken);
+    }
+    
+    // Add the parameters to the URL
+    url = `${url}?${params.toString()}`;
+    
+    console.log('Fetching from URL:', url);
+    
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Google Photos API error:', errorData);
+      return res.status(response.status).json({ error: 'Failed to search photos' });
+    }
+    
+    const data = await response.json();
+    
+    // If there's a search query, filter the results on the server side
+    if (query && query.trim() !== '' && data.mediaItems) {
+      // Simple case-insensitive search in filename
+      const filteredItems = data.mediaItems.filter((item: any) => 
+        item.filename.toLowerCase().includes(query.toLowerCase())
+      );
+      
+      return res.json({
+        mediaItems: filteredItems,
+        nextPageToken: data.nextPageToken
+      });
+    }
+    
+    // If no query or no results, return the original data
+    res.json(data);
+  } catch (error) {
+    console.error('Error searching photos:', error);
+    res.status(500).json({ error: 'Failed to search photos' });
+  }
+});
+
 export default router; 

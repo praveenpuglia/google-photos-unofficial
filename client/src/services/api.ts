@@ -84,5 +84,34 @@ export const photosApi = {
       console.error(`Error fetching photo ${id}:`, error);
       throw error;
     }
+  },
+  
+  // Search photos by query
+  searchPhotos: async (query: string, pageSize: number = 25, pageToken?: string) => {
+    try {
+      const url = `${API_URL}/photos/search`;
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          query,
+          pageSize,
+          pageToken
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error searching photos:', error);
+      throw error;
+    }
   }
 }; 

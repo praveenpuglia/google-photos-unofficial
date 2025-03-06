@@ -13,6 +13,8 @@ import "yet-another-react-lightbox/styles.css";
 import "yet-another-react-lightbox/plugins/thumbnails.css";
 import "yet-another-react-lightbox/plugins/captions.css";
 import "../styles/PhotosPage.css";
+import { useNavigate } from 'react-router-dom';
+import '../styles/ExplorePage.css';
 
 interface Photo {
   id: string;
@@ -83,6 +85,8 @@ const PhotosPage = () => {
   // Infinite loading
   const gridRef = useRef<Grid>(null);
   const loadMoreItemsRef = useRef<boolean>(false);
+
+  const navigate = useNavigate();
 
   const fetchPhotos = async (pageToken?: string) => {
     try {
@@ -285,18 +289,60 @@ const PhotosPage = () => {
   });
 
   if (loading && photos.length === 0) {
-    return <div className="loading-container">Loading your photos...</div>;
+    return (
+      <div className="photos-container">
+        <header className="photos-header">
+          <div className="header-left">
+            <h1><img height={24} src="/logo.png" alt="logo" /> Photos (Unofficial)</h1>
+            <nav className="main-nav">
+              <button onClick={() => navigate('/photos')} className="nav-link active">Home</button>
+              <button onClick={() => navigate('/explore')} className="nav-link">Explore</button>
+            </nav>
+          </div>
+          <div className="header-right">
+            <button onClick={handleLogout} className="logout-button">
+              Logout
+            </button>
+          </div>
+        </header>
+        <div className="loading-container">Loading your photos...</div>
+      </div>
+    );
   }
 
   if (error && photos.length === 0) {
-    return <div className="error-container">{error}</div>;
+    return (
+      <div className="photos-container">
+        <header className="photos-header">
+          <div className="header-left">
+            <h1><img height={24} src="/logo.png" alt="logo" /> Photos (Unofficial)</h1>
+            <nav className="main-nav">
+              <button onClick={() => navigate('/photos')} className="nav-link active">Home</button>
+              <button onClick={() => navigate('/explore')} className="nav-link">Explore</button>
+            </nav>
+          </div>
+          <div className="header-right">
+            <button onClick={handleLogout} className="logout-button">
+              Logout
+            </button>
+          </div>
+        </header>
+        <div className="error-container">{error}</div>
+      </div>
+    );
   }
 
   return (
     <div className="photos-container">
       <header className="photos-header">
-        <h1><img height={24} src="/logo.png" alt="logo" /> Photos (Unofficial)</h1>
-        <div className="header-info">
+        <div className="header-left">
+          <h1><img height={24} src="/logo.png" alt="logo" /> Photos (Unofficial)</h1>
+          <nav className="main-nav">
+            <button onClick={() => navigate('/photos')} className="nav-link active">Home</button>
+            <button onClick={() => navigate('/explore')} className="nav-link">Explore</button>
+          </nav>
+        </div>
+        <div className="header-right">
           <button onClick={handleLogout} className="logout-button">
             Logout
           </button>

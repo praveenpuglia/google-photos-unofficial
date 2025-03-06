@@ -147,10 +147,13 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 50vh;
+  min-height: calc(100vh - 70px); /* Subtract navbar height */
+  margin-top: 1rem; /* Add some space below the navbar */
   font-size: 1.2rem;
   color: #666;
   text-align: center;
+  position: relative; /* Ensure it doesn't overlay absolutely positioned elements */
+  z-index: 1; /* Lower z-index than the navbar */
 }
 
 .loading-more {
