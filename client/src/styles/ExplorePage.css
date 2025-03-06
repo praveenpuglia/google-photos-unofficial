@@ -91,7 +91,10 @@
 }
 
 .explore-content {
-  padding: 1rem;
+  height: calc(100vh - 80px); /* Match the height of virtualized-grid-container */
+  overflow: hidden; /* Prevent scrolling on the container itself */
+  display: flex;
+  flex-direction: column;
 }
 
 .search-results-header {

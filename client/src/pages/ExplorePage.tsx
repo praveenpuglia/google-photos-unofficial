@@ -431,97 +431,95 @@ const ExplorePage = () => {
             <p>No photos found in your Google Photos library.</p>
           </div>
         ) : (
-          <>
-            <div className="virtualized-grid-container">
-              <AutoSizer>
-                {({ height, width }: { height: number; width: number }) => (
-                  <Grid
-                    ref={gridRef}
-                    columnCount={columnCount}
-                    columnWidth={Math.floor(width / columnCount)}
-                    height={height}
-                    rowCount={rowCount}
-                    rowHeight={CELL_HEIGHT}
-                    width={width}
-                    onItemsRendered={onItemsRendered}
-                    itemData={photos}
-                    style={{ overflowX: 'hidden' }}
-                  >
-                    {Cell}
-                  </Grid>
-                )}
-              </AutoSizer>
-            </div>
-
-            {!hasMore && photos.length > 0 && (
-              <div className="no-more-photos">End of your photo collection</div>
-            )}
-
-            <Lightbox
-              open={lightboxOpen}
-              close={() => setLightboxOpen(false)}
-              slides={slides}
-              index={lightboxIndex}
-              plugins={[Video, Zoom, Fullscreen, Thumbnails, Captions]}
-              video={{
-                autoPlay: true,
-                controls: true,
-                playsInline: true,
-                loop: false,
-              }}
-              zoom={{
-                maxZoomPixelRatio: 5,
-                zoomInMultiplier: 2,
-                doubleTapDelay: 300,
-                doubleClickDelay: 300,
-                keyboardMoveDistance: 50,
-                wheelZoomDistanceFactor: 100,
-                pinchZoomDistanceFactor: 100,
-                scrollToZoom: true,
-              }}
-              carousel={{
-                finite: false,
-                preload: 3,
-                padding: "16px",
-                spacing: "30%",
-              }}
-              thumbnails={{
-                position: "bottom",
-                width: 120,
-                height: 80,
-                borderRadius: 4,
-                padding: 4,
-                gap: 10,
-                showToggle: true,
-                hidden: true,
-              }}
-              captions={{
-                showToggle: true,
-                descriptionTextAlign: "center",
-                descriptionMaxLines: 3,
-                hidden: true,
-              }}
-              animation={{
-                swipe: 250,
-                zoom: 500,
-              }}
-              controller={{
-                closeOnBackdropClick: true,
-                closeOnPullDown: true,
-              }}
-              render={{
-                buttonPrev: photos.length <= 1 ? () => null : undefined,
-                buttonNext: photos.length <= 1 ? () => null : undefined,
-                iconLoading: () => (
-                  <div className="lightbox-loading">
-                    <div className="spinner"></div>
-                    <div>Loading full resolution image...</div>
-                  </div>
-                ),
-              }}
-            />
-          </>
+          <div className="virtualized-grid-container">
+            <AutoSizer>
+              {({ height, width }: { height: number; width: number }) => (
+                <Grid
+                  ref={gridRef}
+                  columnCount={columnCount}
+                  columnWidth={Math.floor(width / columnCount)}
+                  height={height}
+                  rowCount={rowCount}
+                  rowHeight={CELL_HEIGHT}
+                  width={width}
+                  onItemsRendered={onItemsRendered}
+                  itemData={photos}
+                  style={{ overflowX: 'hidden' }}
+                >
+                  {Cell}
+                </Grid>
+              )}
+            </AutoSizer>
+          </div>
         )}
+
+        {!hasMore && photos.length > 0 && (
+          <div className="no-more-photos">End of your photo collection</div>
+        )}
+
+        <Lightbox
+          open={lightboxOpen}
+          close={() => setLightboxOpen(false)}
+          slides={slides}
+          index={lightboxIndex}
+          plugins={[Video, Zoom, Fullscreen, Thumbnails, Captions]}
+          video={{
+            autoPlay: true,
+            controls: true,
+            playsInline: true,
+            loop: false,
+          }}
+          zoom={{
+            maxZoomPixelRatio: 5,
+            zoomInMultiplier: 2,
+            doubleTapDelay: 300,
+            doubleClickDelay: 300,
+            keyboardMoveDistance: 50,
+            wheelZoomDistanceFactor: 100,
+            pinchZoomDistanceFactor: 100,
+            scrollToZoom: true,
+          }}
+          carousel={{
+            finite: false,
+            preload: 3,
+            padding: "16px",
+            spacing: "30%",
+          }}
+          thumbnails={{
+            position: "bottom",
+            width: 120,
+            height: 80,
+            borderRadius: 4,
+            padding: 4,
+            gap: 10,
+            showToggle: true,
+            hidden: true,
+          }}
+          captions={{
+            showToggle: true,
+            descriptionTextAlign: "center",
+            descriptionMaxLines: 3,
+            hidden: true,
+          }}
+          animation={{
+            swipe: 250,
+            zoom: 500,
+          }}
+          controller={{
+            closeOnBackdropClick: true,
+            closeOnPullDown: true,
+          }}
+          render={{
+            buttonPrev: photos.length <= 1 ? () => null : undefined,
+            buttonNext: photos.length <= 1 ? () => null : undefined,
+            iconLoading: () => (
+              <div className="lightbox-loading">
+                <div className="spinner"></div>
+                <div>Loading full resolution image...</div>
+              </div>
+            ),
+          }}
+        />
       </div>
     </div>
   );
