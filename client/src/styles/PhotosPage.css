@@ -280,12 +280,15 @@
 .virtualized-grid-container {
   height: calc(100vh - 70px); /* Adjust based on your header height */
   width: 100%;
+  padding: 4px;
   box-sizing: border-box;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
 }
 
 /* Override some react-window default styles */
 .virtualized-grid-container [role="grid"] {
   outline: none !important;
+  overflow-x: hidden !important; /* Force hide horizontal scrollbar */
 }
 
 /* Shimmer loading effect */

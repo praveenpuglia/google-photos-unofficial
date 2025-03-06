@@ -183,11 +183,12 @@ const PhotosPage = () => {
       return <div style={style} />;
     }
     
-    // Adjust style to account for grid gap
+    // Adjust style to account for grid gap - use percentage-based adjustments
+    // This prevents overflow issues that cause horizontal scrolling
     const cellStyle = {
       ...style,
-      left: Number(style.left) + GRID_GAP,
-      top: Number(style.top) + GRID_GAP,
+      left: Number(style.left) + GRID_GAP / 2,
+      top: Number(style.top) + GRID_GAP / 2,
       width: Number(style.width) - GRID_GAP,
       height: Number(style.height) - GRID_GAP,
     };
@@ -294,11 +295,8 @@ const PhotosPage = () => {
   return (
     <div className="photos-container">
       <header className="photos-header">
-        <h1>🌈 Photos (Unofficial)</h1>
+        <h1><img height={24} src="/logo.png" alt="logo" /> Photos (Unofficial)</h1>
         <div className="header-info">
-          {/* {photos.length > 0 && (
-            <span className="photo-count">{photos.length} photos</span>
-          )} */}
           <button onClick={handleLogout} className="logout-button">
             Logout
           </button>
@@ -317,13 +315,14 @@ const PhotosPage = () => {
                 <Grid
                   ref={gridRef}
                   columnCount={columnCount}
-                  columnWidth={width / columnCount}
+                  columnWidth={Math.floor(width / columnCount)}
                   height={height}
                   rowCount={rowCount}
                   rowHeight={CELL_HEIGHT}
-                  width={width}
+                  width={width + 16}
                   onItemsRendered={onItemsRendered}
                   itemData={photos}
+                  style={{ overflowX: 'hidden', scrollbarGutter:'stable' }}
                 >
                   {Cell}
                 </Grid>
