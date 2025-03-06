@@ -38,6 +38,9 @@ interface CellProps {
   style: React.CSSProperties;
 }
 
+// Add a constant for the number of shimmer placeholders to show
+const SHIMMER_PLACEHOLDER_COUNT = 8;
+
 const PhotosPage = () => {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -72,8 +75,10 @@ const PhotosPage = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Calculate row count based on photos length and column count
-  const rowCount = Math.ceil(photos.length / columnCount);
+  // Calculate row count based on photos length and column count, plus extra rows for shimmer placeholders when loading more
+  const rowCount = Math.ceil(
+    (photos.length + (loadingMore ? SHIMMER_PLACEHOLDER_COUNT : 0)) / columnCount
+  );
 
   // Infinite loading
   const gridRef = useRef<Grid>(null);
@@ -170,14 +175,13 @@ const PhotosPage = () => {
   const Cell = ({ columnIndex, rowIndex, style }: CellProps) => {
     const index = rowIndex * columnCount + columnIndex;
     
-    // Return empty cell if index is out of bounds
-    if (index >= photos.length) {
+    // Show shimmer placeholder if we're loading more and this is a placeholder cell
+    const isPlaceholder = loadingMore && index >= photos.length && index < photos.length + SHIMMER_PLACEHOLDER_COUNT;
+    
+    // Return empty cell if index is out of bounds and not a placeholder
+    if (index >= photos.length && !isPlaceholder) {
       return <div style={style} />;
     }
-    
-    const photo = photos[index];
-    const imageUrl = `${photo.baseUrl}=w400-h400`;
-    const isVideoItem = isVideo(photo);
     
     // Adjust style to account for grid gap
     const cellStyle = {
@@ -187,6 +191,23 @@ const PhotosPage = () => {
       width: Number(style.width) - GRID_GAP,
       height: Number(style.height) - GRID_GAP,
     };
+    
+    // Render shimmer placeholder
+    if (isPlaceholder) {
+      return (
+        <div
+          style={cellStyle}
+          className="photo-card shimmer-card"
+        >
+          <div style={{ width: '100%', height: '100%' }} />
+        </div>
+      );
+    }
+    
+    // Render actual photo
+    const photo = photos[index];
+    const imageUrl = `${photo.baseUrl}=w400-h400`;
+    const isVideoItem = isVideo(photo);
     
     return (
       <div
@@ -309,10 +330,6 @@ const PhotosPage = () => {
               )}
             </AutoSizer>
           </div>
-
-          {loadingMore && (
-            <div className="loading-more">Loading more photos...</div>
-          )}
 
           {!hasMore && photos.length > 0 && (
             <div className="no-more-photos">End of your photo collection</div>
