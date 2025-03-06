@@ -63,17 +63,18 @@
   display: flex;
   flex-direction: column;
   background-color: white;
-  aspect-ratio: 1 / 1.2;
   cursor: pointer;
   position: relative;
+  outline: none;
+  aspect-ratio: 1 / 1.2;
 }
 
-.photo-card:hover {
+.photo-card:hover, .photo-card:focus {
   transform: translateY(-5px);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
 }
 
-.photo-card:hover::after {
+.photo-card:hover::after, .photo-card:focus::after {
   content: '';
   position: absolute;
   top: 0;
@@ -82,6 +83,12 @@
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.1);
   pointer-events: none;
+}
+
+/* Add a visible focus indicator for keyboard navigation */
+.photo-card:focus-visible {
+  outline: 3px solid #4285F4;
+  outline-offset: 2px;
 }
 
 .photo-card img {

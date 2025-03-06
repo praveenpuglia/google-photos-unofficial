@@ -246,11 +246,23 @@ const ExplorePage = () => {
     const imageUrl = `${photo.baseUrl}=w400-h400`;
     const isVideoItem = isVideo(photo);
     
+    // Handle keyboard events for accessibility
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openLightbox(index);
+      }
+    };
+    
     return (
       <div
         style={cellStyle}
         className={`photo-card ${isVideoItem ? "video-item" : ""}`}
         onClick={() => openLightbox(index)}
+        onKeyDown={handleKeyDown}
+        tabIndex={0}
+        role="button"
+        aria-label={`View ${photo.filename}`}
       >
         <div style={{ width: '100%', height: '100%', position: 'relative' }}>
           <img 
